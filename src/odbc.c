@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <sql.h>
 #include <sqlext.h>
-#include "odbc.h"
+#include "../inc/odbc.h"
 
 /* REPORT OF THE MOST RECENT ERROR USING HANDLE handle */
 void odbc_extract_error(char *fn, SQLHANDLE handle, SQLSMALLINT type) {
