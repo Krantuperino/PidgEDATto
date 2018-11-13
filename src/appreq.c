@@ -1,6 +1,8 @@
 #include "../inc/appreq.h"
 #include <string.h>
 
+char query[512];
+
 void main(int argc, char **argv)
 {
     if(strcmp(argv[1], "user") == 0){
@@ -32,5 +34,122 @@ void main(int argc, char **argv)
 
 short appreq_user(SQLCHAR* screenName)
 {
+    SQLHENV env;
+    SQLHDBC dbc;
+    SQLHSTMT stmt;
+    SQLRETURN ret;
+    SQLSMALLINT columns;
+    char aids[512];
+    long int num, buff;
+    int n=0;
 
+    /* CONNECT */
+    ret = odbc_connect(&env, &dbc);
+    if(!SQL_SUCCEEDED(ret)) {
+      return EXIT_FAILURE;
+    }
+
+    /* Allocate Handle */
+    SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+
+    /* Preparation */
+    sprintf(aids, "SELECT user_id FROM users WHERE screenname='%s'", screenName);
+
+    SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
+
+    SQLBindCol(stmt, 1, SQL_C_SBIGINT, &num, sizeof(num), NULL);
+
+    if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
+      printf("User %s doesnt exist", screenName);
+      return -1;
+    }
+
+    SQLCloseCursor(stmt);
+
+    /* Query */
+    sprintf(query, "SELECT screenname, user_id FROM users WHERE follower IN (SELECT follower FROM follows WHERE followee=%ld)", num);
+
+    SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
+
+    printf("Seguidores: ");
+
+    while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+      ret = SQLGetData(stmt, 1, SQL_C_CHAR, aids, sizeof(aids), NULL);
+      ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, buff , sizeof(num), NULL);
+      printf("%s\t%ld\n", aids, num);
+      n++;
+    }
+    printf("Numero total de seguidores: %d", n);
+    n=0;
+
+    SQLCloseCursor(stmt);
+
+    sprintf(query, "SELECT screenname, user_id FROM users WHERE user_id IN (SELECT followee FROM follows WHERE follower=%ld)", num);
+
+    SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
+
+    printf("Seguidos: ");
+
+    while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+      ret = SQLGetData(stmt, 1, SQL_C_CHAR, aids, sizeof(aids), NULL);
+      ret = SQLGetData(stmt, 2, SQL_C_SBIGINT, buff , sizeof(buff), NULL);
+      printf("%s\t%ld\n", aids, num);
+      n++;
+    }
+    printf("Numero total de seguidos: %d", n);
+
+    return 0;
+}
+
+short appreq_tweets(SQLCHAR* screenName) {
+  SQLHENV env;
+  SQLHDBC dbc;
+  SQLHSTMT stmt;
+  SQLRETURN ret;
+  SQLSMALLINT columns;
+  char aids[512], aidd[512];
+  long int num, buff, buffb;
+  int n=0;
+
+  /* CONNECT */
+  ret = odbc_connect(&env, &dbc);
+  if(!SQL_SUCCEEDED(ret)) {
+    return EXIT_FAILURE;
+  }
+
+  /* Allocate Handle */
+  SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+
+  /* Preparation */
+  sprintf(aids, "SELECT user_id FROM users WHERE screenname='%s'", screenName);
+
+  SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
+
+  SQLBindCol(stmt, 1, SQL_C_SBIGINT, &num, sizeof(num), NULL);
+
+  if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
+    printf("User %s doesnt exist", screenName);
+    return -1;
+  }
+
+  SQLCloseCursor(stmt);
+
+  /* Query */
+  sprintf(query, "SELECT tweet_id, tweettimestemp, tweettext WHERE userwriter=%ld", num);
+
+  SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
+
+  printf("Tweets: ");
+
+  while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+    ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, buff, sizeof(buff), NULL);
+    ret = SQLGetData(stmt, 2, SQL_C_CHAR, aids, sizeof(aids), NULL);
+    ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
+    printf("%ld,%s, \"%s\"", buff, aids, aidd);
+    n++;
+  }
+
+  printf("Numero de tweets: %d", n);
+
+  return 0;
 }
