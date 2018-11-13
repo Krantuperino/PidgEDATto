@@ -6,6 +6,6 @@
 
 short apptweet_new(SQLCHAR* screenName, SQLCHAR* text);
 short apptweet_remove(SQLINTEGER tweet_id);
-short apptweet_remove(SQLCHAR* screenName, SQLINTEGER tweet_id);
+short apptweet_retweet(SQLCHAR* screenName, SQLINTEGER tweet_id);
 
 #endif
