@@ -67,7 +67,7 @@ short appreq_user(SQLCHAR* screenName)
     SQLCloseCursor(stmt);
 
     /* Query */
-    sprintf(query, "SELECT screenname, user_id FROM users WHERE follower IN (SELECT follower FROM follows WHERE followee=%ld)", num);
+    sprintf(query, "SELECT screenname, user_id FROM users WHERE user_id IN (SELECT follower FROM follows WHERE followee=%ld)", num);
 
     SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
@@ -135,7 +135,7 @@ short appreq_tweets(SQLCHAR* screenName) {
   SQLCloseCursor(stmt);
 
   /* Query */
-  sprintf(query, "SELECT tweet_id, tweettimestemp, tweettext WHERE userwriter=%ld", num);
+  sprintf(query, "SELECT tweet_id, tweettimestamp, tweettext WHERE userwriter=%ld ORDER BY tweettimestamp", num);
 
   SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
@@ -152,4 +152,65 @@ short appreq_tweets(SQLCHAR* screenName) {
   printf("Numero de tweets: %d", n);
 
   return 0;
+}
+
+short appreq_retweets(SQLINTEGER tweet_id) {
+  SQLHENV env;
+  SQLHDBC dbc;
+  SQLHSTMT stmt;
+  SQLRETURN ret;
+  SQLSMALLINT columns;
+  char aids[512], aidd[512], aidf[512];
+  long int num, buff, buffb;
+  int n=0;
+
+  /* CONNECT */
+  ret = odbc_connect(&env, &dbc);
+  if(!SQL_SUCCEEDED(ret)) {
+    return EXIT_FAILURE;
+  }
+
+  /* Allocate Handle */
+  SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+
+  sprintf(query, "SELECT tweetid, screenname, tweettimestamp, tweettext FROM tweets, users WHERE retweet=%ld", tweet_id);
+
+  SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
+
+  printf("Tweets que son retweets: ")
+
+  while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+    ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, buff, sizeof(buff), NULL);
+    ret = SQLGetData(stmt, 2, SQL_C_CHAR, aids, sizeof(aids), NULL);
+    ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
+    ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidf, sizeof(aidd), NULL);
+    printf("%ld,%s,%s, \"%s\"", buff, aids, aidd);
+    n++;
+  }
+
+  printf("Numero de retweets: %d", n);
+
+  return 0;
+}
+
+short appreq_maxrt() {
+  SQLHENV env;
+  SQLHDBC dbc;
+  SQLHSTMT stmt;
+  SQLRETURN ret;
+  SQLSMALLINT columns;
+  char aids[512], aidd[512], aidf[512];
+  long int num, buff, buffb;
+  int n=0;
+
+  /* CONNECT */
+  ret = odbc_connect(&env, &dbc);
+  if(!SQL_SUCCEEDED(ret)) {
+    return EXIT_FAILURE;
+  }
+
+  /* Allocate Handle */
+  SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+
+  sprintf(query, "")
 }
