@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -pedantic -ansi
 LDLIBS = -lodbc
 
-EXE = appfollow apptweet
+EXE = appfollow apptweet appuser
 
 all : $(EXE)
 

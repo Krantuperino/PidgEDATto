@@ -1,14 +1,15 @@
 #include "appuser.h"
 #include <string.h>
 
+char query[512];
+
 short appuser_new(SQLCHAR* screenName, SQLCHAR* location)
 {
     SQLHENV env;
     SQLHDBC dbc;
     SQLHSTMT stmt;
     SQLRETURN ret;
-    char aids[512];
-    long int num;
+
 
     /* CONNECT */
     ret = odbc_connect(&env, &dbc);
@@ -19,25 +20,11 @@ short appuser_new(SQLCHAR* screenName, SQLCHAR* location)
     /* Allocate Handle */
     SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
-    /* Preparation */
-    sprintf(aids, "SELECT user_id FROM users WHERE screenname='%s'", screenName);
-
-    SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
-
-    SQLBindCol(stmt, 1, SQL_C_SBIGINT, &num, sizeof(num), NULL);
-
-    if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
-      printf("User %s doesnt exist", screenName);
-      return -1;
-    }
-
-    SQLCloseCursor(stmt);
-
-    sprintf(query, "INSERT into users(screenName, usertimestamp, location) VALUES ('%s', date_trunc('second', LOCALTIMESTAMP), %s)", screeName, location);
+    sprintf(query, "INSERT into users(screenname, usercreated, location) VALUES ('%s', date_trunc('second', LOCALTIMESTAMP), '%s')", screenName, location);
 
     SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
     printf("Create user %s located in %s\n", screenName, location);
-    
+
     return 0;
 }
 
@@ -55,7 +42,7 @@ short appuser_remove(SQLCHAR* screenName)
 
     SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
-    sprintf(query, "DELETE FROM users WHERE screenName='%s'", screenName);
+    sprintf(query, "DELETE FROM users WHERE screenname='%s'", screenName);
 
     SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
@@ -63,19 +50,23 @@ short appuser_remove(SQLCHAR* screenName)
     return 0;
 }
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
+  if(argc == 1){
+    printf("Elije una opcion\n");
+    return -1;
+  }
     if(strcmp(argv[1], "new") == 0){
-        appuser_new(argv[2], argv[3]);
-        return;
+        appuser_new((SQLCHAR*)argv[2], (SQLCHAR*)argv[3]);
+        return 0;
     }
     else if(strcmp(argv[1], "remove") == 0){
-        appuser_remove(argv[2]);
-        return;
+        appuser_remove((SQLCHAR*)argv[2]);
+        return 0;
     }
     else{
-        printf("Opcion incorrecta, las opciones son:");
+        printf("Opcion incorrecta, las opciones son:\n");
         printf("\tnew\n\tremove\n");
-        return;
+        return 0;
     }
 }
