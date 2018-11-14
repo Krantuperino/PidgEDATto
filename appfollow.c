@@ -60,13 +60,13 @@ short appfollow_new(SQLCHAR* screenName_follower, SQLCHAR* screenName_followeed)
 
     SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
-    if(SQL_SUCCEEDED(ret = SQLFetch(stmt))){
-      printf("User %s succesfully followed %s\n", screenName_follower, screenName_followeed);
-      return 0;
-    }
-    else{
+    if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
       printf("There was something wrong when following\n");
       return -1;
+    }
+    else{
+      printf("User %s succesfully followed %s\n", screenName_follower, screenName_followeed);
+      return 0;
     }
 }
 
@@ -125,13 +125,13 @@ short appfollow_remove(SQLCHAR* screenName_follower, SQLCHAR* screenName_followe
 
     SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
-    if(SQL_SUCCEEDED(ret = SQLFetch(stmt))){
-      printf("User %s succesfully unfollowed %s\n", screenName_follower, screenName_followeed);
-      return 0;
-    }
-    else{
+    if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
       printf("There was something wrong when unfollowing\n");
       return -1;
+    }
+    else{
+      printf("User %s succesfully unfollowed %s\n", screenName_follower, screenName_followeed);
+      return 0;
     }
 
 }

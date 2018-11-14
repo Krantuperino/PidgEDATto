@@ -1,4 +1,4 @@
-#include "../inc/appuser.h"
+#include "appuser.h"
 #include <string.h>
 
 void main(int argc, char **argv)

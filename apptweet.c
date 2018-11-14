@@ -1,5 +1,7 @@
-#include "../inc/apptweet.h"
+#include "apptweet.h"
 #include <string.h>
+
+char * query[512];
 
 short apptweet_new(SQLCHAR* screenName, SQLCHAR* text)
 {
@@ -37,9 +39,18 @@ short apptweet_new(SQLCHAR* screenName, SQLCHAR* text)
 
     /* MA MANGO IS TO BLOW UP */
 
-    sprintf(query, "INSERT into tweets(tweettext, userwriter) VALUES ('%s', '%s')", text, screenName);
+    sprintf(query, "INSERT into tweets(tweettext, userwriter) VALUES ('%s', %ld)", text, num);
 
     SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
+
+    if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
+        printf("There seemed to be an error sending the tweet\n");
+        return -1;
+    }
+    else{
+        printf("Tweet sent by %s\n", screenName);
+        return 0;
+    }
 }
 
 short apptweet_remove(SQLINTEGER tweet_id)
@@ -62,19 +73,6 @@ short apptweet_remove(SQLINTEGER tweet_id)
     /* Allocate Handle */
     SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
-    /* Preparation */
-    sprintf(aids, "SELECT user_id FROM users WHERE screenname='%s'", screenName);
-
-    SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
-
-    SQLBindCol(stmt, 1, SQL_C_SBIGINT, &num, sizeof(num), NULL);
-
-    if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
-      printf("User %s doesnt exist", screenName);
-      return -1;
-    }
-
-    SQLCloseCursor(stmt);
 
     /* MA MANGO IS TO BLOW UP */
 
@@ -82,13 +80,22 @@ short apptweet_remove(SQLINTEGER tweet_id)
 
     SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
+     if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
+        printf("There seemed to be an error deleting the tweet\n");
+        return -1;
+    }
+    else{
+        printf("Tweet %ld removed\n", tweet_id);
+        return 0;
+    }
+
      /* BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM */
 }
 
 void main(int argc, char **argv)
 {
     char * text;
-    int i, j, k=1, flag=0;
+    int i, j, k=0, flag=0;
 
     if(strcmp(argv[1], "new") == 0){
         if(argv[3][0] != '"'){
@@ -99,7 +106,6 @@ void main(int argc, char **argv)
             while(argv[i][k]!= '\0'){
                 if(argv[i][k] == '"'){
                     flag = 1;
-                    break;
                 }
                 text[j] = argv[i][k];
                 j++;
