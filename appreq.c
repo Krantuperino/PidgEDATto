@@ -117,7 +117,7 @@ short appreq_tweets(SQLCHAR* screenName) {
     ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, buff, sizeof(buff), NULL);
     ret = SQLGetData(stmt, 2, SQL_C_CHAR, aids, sizeof(aids), NULL);
     ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
-    printf("%ld,%s, \"%s\\n"", buff, aids, aidd);
+    printf("%ld,%s, \"%s\"\n", buff, aids, aidd);
     n++;
   }
 
@@ -149,7 +149,7 @@ short appreq_retweets(SQLINTEGER tweet_id) {
 
   SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
 
-  printf("Tweets que son retweets: ")
+  printf("Tweets que son retweets: \n");
 
   while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
     ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, buff, sizeof(buff), NULL);
@@ -184,7 +184,7 @@ short appreq_maxrt() {
   /* Allocate Handle */
   SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
-  sprintf(query, "")
+  sprintf(query, "");
 }
 
 void main(int argc, char **argv)
