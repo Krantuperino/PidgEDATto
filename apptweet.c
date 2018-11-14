@@ -74,14 +74,15 @@ short apptweet_remove(SQLCHAR * tweet_id)
      /* BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM */
 }
 
-short apptweet_retweet(SQLCHAR* screenName, SQLINTEGER tweet_id)
+short apptweet_retweet(SQLCHAR* screenName, SQLCHAR* tweet_id)
 {
   SQLHENV env;
   SQLHDBC dbc;
   SQLHSTMT stmt;
   SQLRETURN ret;
+  SQLCHAR aidd[512] = {0};
   char aids[512];
-  long int num;
+  long int num, buff;
 
   /* CONNECT */
   ret = odbc_connect(&env, &dbc);
@@ -104,9 +105,27 @@ short apptweet_retweet(SQLCHAR* screenName, SQLINTEGER tweet_id)
     return -1;
   }
 
-  sprintf(query, "INSERT INTO tweets (retweet, userwriter) VALUES (%d, %ld)", tweet_id, num);
+  buff = num;
+
+  SQLCloseCursor(stmt);
+
+  sprintf(aids, "SELECT tweettext FROM tweets WHERE tweet_id=%s", tweet_id);
+
+  SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
+  ret = SQLFetch(stmt);
+  if(!SQL_SUCCEEDED(ret)){
+    printf("Something went wrong\n");
+    return -1;
+  }
+  else {
+    SQLGetData(stmt, 1, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
+  }
+
+  SQLCloseCursor(stmt);
+  sprintf(aids, "\"RT %s\"", aidd);
+  sprintf(query, "INSERT INTO tweets (retweet, tweettext, tweettimestamp, userwriter) VALUES (%s, '%s', date_trunc('second', LOCALTIMESTAMP), %ld)", tweet_id, aids, buff);
   SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
-  printf("User %s retweeted %d", screenName, tweet_id);
+  printf("User %s retweeted %s\n", screenName, tweet_id);
   return 0;
 }
 
@@ -134,7 +153,7 @@ int main(int argc, char **argv)
         return 0;
     }
     else if(strcmp(argv[1], "retweet") == 0){
-        apptweet_retweet((SQLCHAR*)argv[2], atol(argv[3]));
+        apptweet_retweet((SQLCHAR*)argv[2], (SQLCHAR*)argv[3]);
         return 0;
     }
     else{

@@ -145,7 +145,7 @@ short appreq_retweets(SQLINTEGER tweet_id) {
   /* Allocate Handle */
   SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
-  sprintf(query, "SELECT tweet_id, screenname, tweettimestamp, tweettext FROM tweets, users WHERE retweet=%ld", tweet_id);
+  sprintf(query, "SELECT t1.tweet_id, t2.screenname, t1.tweettimestamp, t1.tweettext FROM(SELECT tweet_id, userwriter, tweettimestamp, tweettext FROM tweets WHERE retweet=%s) t1JOIN(SELECT screenname, user_id FROM users) t2 ON t1.userwriter = t2.user_id", tweet_id);
 
   SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
 
@@ -185,6 +185,37 @@ short appreq_maxrt() {
   SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
   sprintf(query, "");
+}
+
+short appreq_maxfw() {
+  SQLHENV env;
+  SQLHDBC dbc;
+  SQLHSTMT stmt;
+  SQLRETURN ret;
+  SQLSMALLINT columns;
+  char aids[512], aidd[512], aidf[512];
+  long int num, buff, buffb;
+  int n=0;
+
+  /* CONNECT */
+  ret = odbc_connect(&env, &dbc);
+  if(!SQL_SUCCEEDED(ret)) {
+    return EXIT_FAILURE;
+  }
+
+  /* Allocate Handle */
+  SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+
+  sprintf(query, "SELECT t1.userfolloweed, t1.count, t2.screenname FROM(SELECT userfolloweed, COUNT(userfollower) AS count FROM follows GROUP BY userfolloweed) t1 JOIN (SELECT user_id, screenname FROM users) t2 ON t1.userfolloweed = t2.user_id ORDER BY t1.count DESC LIMIT 20");
+
+  while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+    ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, buff, sizeof(buff), NULL);
+    ret = SQLGetData(stmt, 2, SQL_C_SBIGINT, num, sizeof(aids), NULL);
+    ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
+    printf("%ld,%s,%ld", buff, aidd, num);
+  }
+
+  return 0;
 }
 
 void main(int argc, char **argv)
