@@ -3,34 +3,6 @@
 
 char query[512];
 
-void main(int argc, char **argv)
-{
-    if(strcmp(argv[1], "user") == 0){
-        appreq_user(argv[2]);
-        return;
-    }
-    else if(strcmp(argv[1], "tweets") == 0){
-        appreq_tweets(argv[2]);
-        return;
-    }
-    else if(strcmp(argv[1], "retweets") == 0){
-        appreq_retweets(atoi(argv[2]));
-        return;
-    }
-    else if(strcmp(argv[1], "maxrt") == 0){
-        appreq_maxrt();
-        return;
-    }
-    else if(strcmp(argv[1], "maxfw") == 0){
-        appreq_maxfw();
-        return;
-    }
-    else{
-        printf("Opcion incorrecta, las opciones son:");
-        printf("\tuser\n\ttweets\n\tretweets\n\tmaxrt\n\tmaxfw\n");
-        return;
-    }
-}
 
 short appreq_user(SQLCHAR* screenName)
 {
@@ -173,7 +145,7 @@ short appreq_retweets(SQLINTEGER tweet_id) {
   /* Allocate Handle */
   SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
-  sprintf(query, "SELECT tweetid, screenname, tweettimestamp, tweettext FROM tweets, users WHERE retweet=%ld", tweet_id);
+  sprintf(query, "SELECT tweet_id, screenname, tweettimestamp, tweettext FROM tweets, users WHERE retweet=%ld", tweet_id);
 
   SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
 
@@ -213,4 +185,33 @@ short appreq_maxrt() {
   SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
   sprintf(query, "")
+}
+
+void main(int argc, char **argv)
+{
+    if(strcmp(argv[1], "user") == 0){
+        appreq_user(argv[2]);
+        return;
+    }
+    else if(strcmp(argv[1], "tweets") == 0){
+        appreq_tweets(argv[2]);
+        return;
+    }
+    else if(strcmp(argv[1], "retweets") == 0){
+        appreq_retweets(atoi(argv[2]));
+        return;
+    }
+    else if(strcmp(argv[1], "maxrt") == 0){
+        appreq_maxrt();
+        return;
+    }
+    else if(strcmp(argv[1], "maxfw") == 0){
+        appreq_maxfw();
+        return;
+    }
+    else{
+        printf("Opcion incorrecta, las opciones son:");
+        printf("\tuser\n\ttweets\n\tretweets\n\tmaxrt\n\tmaxfw\n");
+        return;
+    }
 }
