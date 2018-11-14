@@ -1,6 +1,90 @@
 #include "../inc/apptweet.h"
 #include <string.h>
 
+short apptweet_new(SQLCHAR* screenName, SQLCHAR* text)
+{
+    SQLHENV env;
+    SQLHDBC dbc;
+    SQLHSTMT stmt;
+    SQLRETURN ret;
+    SQLSMALLINT columns;
+    char aids[512];
+    long int num, buff;
+    int n=0;
+
+    /* CONNECT */
+    ret = odbc_connect(&env, &dbc);
+    if(!SQL_SUCCEEDED(ret)) {
+      return EXIT_FAILURE;
+    }
+
+    /* Allocate Handle */
+    SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+
+    /* Preparation */
+    sprintf(aids, "SELECT user_id FROM users WHERE screenname='%s'", screenName);
+
+    SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
+
+    SQLBindCol(stmt, 1, SQL_C_SBIGINT, &num, sizeof(num), NULL);
+
+    if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
+      printf("User %s doesnt exist", screenName);
+      return -1;
+    }
+
+    SQLCloseCursor(stmt);
+
+    /* MA MANGO IS TO BLOW UP */
+
+    sprintf(query, "INSERT into tweets(tweettext, userwriter) VALUES ('%s', '%s')", text, screenName);
+
+    SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
+}
+
+short apptweet_remove(SQLINTEGER tweet_id)
+{
+    SQLHENV env;
+    SQLHDBC dbc;
+    SQLHSTMT stmt;
+    SQLRETURN ret;
+    SQLSMALLINT columns;
+    char aids[512];
+    long int num, buff;
+    int n=0;
+
+    /* CONNECT */
+    ret = odbc_connect(&env, &dbc);
+    if(!SQL_SUCCEEDED(ret)) {
+      return EXIT_FAILURE;
+    }
+
+    /* Allocate Handle */
+    SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
+
+    /* Preparation */
+    sprintf(aids, "SELECT user_id FROM users WHERE screenname='%s'", screenName);
+
+    SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
+
+    SQLBindCol(stmt, 1, SQL_C_SBIGINT, &num, sizeof(num), NULL);
+
+    if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
+      printf("User %s doesnt exist", screenName);
+      return -1;
+    }
+
+    SQLCloseCursor(stmt);
+
+    /* MA MANGO IS TO BLOW UP */
+
+    sprintf(query, "DELETE tweets WHERE tweet_id='%ld'", tweet_id);
+
+    SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
+
+     /* BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM */
+}
+
 void main(int argc, char **argv)
 {
     char * text;
