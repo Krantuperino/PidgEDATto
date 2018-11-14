@@ -1,4 +1,4 @@
-#include "../inc/appreq.h"
+#include "appreq.h"
 #include <string.h>
 
 char query[512];
@@ -32,7 +32,7 @@ short appreq_user(SQLCHAR* screenName)
     SQLBindCol(stmt, 1, SQL_C_SBIGINT, &num, sizeof(num), NULL);
 
     if(!SQL_SUCCEEDED(ret = SQLFetch(stmt))){
-      printf("User %s doesnt exist", screenName);
+      printf("User %s doesnt exist\n", screenName);
       return -1;
     }
 
@@ -43,7 +43,7 @@ short appreq_user(SQLCHAR* screenName)
 
     SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
-    printf("Seguidores: ");
+    printf("Seguidores: \n");
 
     while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
       ret = SQLGetData(stmt, 1, SQL_C_CHAR, aids, sizeof(aids), NULL);
@@ -51,7 +51,7 @@ short appreq_user(SQLCHAR* screenName)
       printf("%s\t%ld\n", aids, num);
       n++;
     }
-    printf("Numero total de seguidores: %d", n);
+    printf("Numero total de seguidores: %d\n", n);
     n=0;
 
     SQLCloseCursor(stmt);
@@ -60,7 +60,7 @@ short appreq_user(SQLCHAR* screenName)
 
     SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
-    printf("Seguidos: ");
+    printf("Seguidos: \n");
 
     while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
       ret = SQLGetData(stmt, 1, SQL_C_CHAR, aids, sizeof(aids), NULL);
@@ -68,7 +68,7 @@ short appreq_user(SQLCHAR* screenName)
       printf("%s\t%ld\n", aids, num);
       n++;
     }
-    printf("Numero total de seguidos: %d", n);
+    printf("Numero total de seguidos: %d\n", n);
 
     return 0;
 }
@@ -93,7 +93,7 @@ short appreq_tweets(SQLCHAR* screenName) {
   SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
   /* Preparation */
-  sprintf(aids, "SELECT user_id FROM users WHERE screenname='%s'", screenName);
+  sprintf(aids, "SELECT user_id FROM users WHERE screenname='%s'\n", screenName);
 
   SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
 
@@ -117,7 +117,7 @@ short appreq_tweets(SQLCHAR* screenName) {
     ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, buff, sizeof(buff), NULL);
     ret = SQLGetData(stmt, 2, SQL_C_CHAR, aids, sizeof(aids), NULL);
     ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
-    printf("%ld,%s, \"%s\"", buff, aids, aidd);
+    printf("%ld,%s, \"%s\\n"", buff, aids, aidd);
     n++;
   }
 
