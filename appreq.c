@@ -147,7 +147,7 @@ short appreq_retweets(SQLINTEGER tweet_id) {
 
   sprintf(query, "SELECT t1.tweet_id, t2.screenname, t1.tweettimestamp, t1.tweettext FROM(SELECT tweet_id, userwriter, tweettimestamp, tweettext FROM tweets WHERE retweet=%s) t1JOIN(SELECT screenname, user_id FROM users) t2 ON t1.userwriter = t2.user_id", tweet_id);
 
-  SQLExecDirect(stmt, (SQLCHAR*) aids, SQL_NTS);
+  SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
   printf("Tweets que son retweets: \n");
 
@@ -184,7 +184,19 @@ short appreq_maxrt() {
   /* Allocate Handle */
   SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
-  sprintf(query, "");
+  sprintf(query, "SELECT t2.retweet AS tweet_id, t2.count AS count, screenname  FROM users, (SELECT t1.retweet AS retweet, t1.count AS count, userwriter FROM tweets, (SELECT retweet, count(retweet) AS count FROM tweets GROUP BY retweet) AS t1 WHERE tweet_id = t1.retweet) AS t2 WHERE user_id = t2.userwriter ORDER BY count DESC LIMIT 20 ");
+
+  SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
+
+  printf("Los 20 tweets mas retweeteados: \n");
+
+  while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
+    ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, buff, sizeof(buff), NULL);
+    ret = SQLGetData(stmt, 2, SQL_C_SBIGINT, num, sizeof(aids), NULL);
+    ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
+    printf("%ld,%s,%ld", buff, aidd, num);
+  }
+
 }
 
 short appreq_maxfw() {
@@ -207,6 +219,10 @@ short appreq_maxfw() {
   SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
   sprintf(query, "SELECT t1.userfolloweed, t1.count, t2.screenname FROM(SELECT userfolloweed, COUNT(userfollower) AS count FROM follows GROUP BY userfolloweed) t1 JOIN (SELECT user_id, screenname FROM users) t2 ON t1.userfolloweed = t2.user_id ORDER BY t1.count DESC LIMIT 20");
+
+  SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
+
+  printf("Los 20 usuarios con mas seguidores: \n");
 
   while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
     ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, buff, sizeof(buff), NULL);
