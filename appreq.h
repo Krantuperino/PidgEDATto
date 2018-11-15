@@ -6,7 +6,7 @@
 
 short appreq_user(SQLCHAR* screenName);
 short appreq_tweets(SQLCHAR* screenName);
-short appreq_retweets(SQLINTEGER tweet_id);
+short appreq_retweets(SQLCHAR* tweet_id);
 short appreq_maxrt();
 short appreq_maxfw();
 
