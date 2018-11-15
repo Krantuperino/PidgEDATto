@@ -35,19 +35,22 @@ short appreq_user(SQLCHAR* screenName)
 			return -1;
 		}
 
+		buff = num;
+
 		SQLCloseCursor(stmt);
 
 		/* Query */
-		sprintf(query, "SELECT screenname, user_id FROM users WHERE user_id IN (SELECT follower FROM follows WHERE followee=%ld)", num);
+		sprintf(query, "SELECT screenname, user_id FROM users WHERE user_id IN (SELECT userfollower FROM follows WHERE userfolloweed=%ld)", buff);
+
 
 		SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
+
 
 		printf("Seguidores: \n");
 
 		while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
 			ret = SQLGetData(stmt, 1, SQL_C_CHAR, aids, sizeof(aids), NULL);
-			ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, &buff , sizeof(SQLINTEGER), NULL);
-			printf("%s\t%ld\n", aids, num);
+			printf("%s\n", aids);
 			n++;
 		}
 		printf("Numero total de seguidores: %d\n", n);
@@ -55,7 +58,9 @@ short appreq_user(SQLCHAR* screenName)
 
 		SQLCloseCursor(stmt);
 
-		sprintf(query, "SELECT screenname, user_id FROM users WHERE user_id IN (SELECT followee FROM follows WHERE follower=%ld)", num);
+		sprintf(query, "SELECT screenname, user_id FROM users WHERE user_id IN (SELECT userfolloweed FROM follows WHERE userfollower=%ld)", buff);
+
+		printf("\n\n\n\n\n");
 
 		SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
@@ -63,8 +68,7 @@ short appreq_user(SQLCHAR* screenName)
 
 		while (SQL_SUCCEEDED(ret = SQLFetch(stmt))) {
 			ret = SQLGetData(stmt, 1, SQL_C_CHAR, aids, sizeof(aids), NULL);
-			ret = SQLGetData(stmt, 2, SQL_C_SBIGINT, &buff , sizeof(SQLINTEGER), NULL);
-			printf("%s\t%ld\n", aids, num);
+			printf("%s\n", aids);
 			n++;
 		}
 		printf("Numero total de seguidos: %d\n", n);
@@ -105,7 +109,7 @@ short appreq_tweets(SQLCHAR* screenName) {
 	SQLCloseCursor(stmt);
 
 	/* Query */
-	sprintf(query, "SELECT tweet_id, tweettimestamp, tweettext WHERE userwriter=%ld ORDER BY tweettimestamp", num);
+	sprintf(query, "SELECT tweet_id, tweettimestamp, tweettext FROM tweets WHERE userwriter=%ld ORDER BY tweettimestamp", num);
 
 	SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
@@ -115,11 +119,11 @@ short appreq_tweets(SQLCHAR* screenName) {
 		ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, &buff, sizeof(SQLINTEGER), NULL);
 		ret = SQLGetData(stmt, 2, SQL_C_CHAR, aids, sizeof(aids), NULL);
 		ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
-		printf("%ld,%s, \"%s\"\n", buff, aids, aidd);
+		printf("%ld,%s, %s\n", buff, aids, aidd);
 		n++;
 	}
 
-	printf("Numero de tweets: %d", n);
+	printf("Numero de tweets: %d\n", n);
 
 	return 0;
 }
@@ -142,7 +146,7 @@ short appreq_retweets(SQLCHAR* tweet_id) {
 	/* Allocate Handle */
 	SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
 
-	sprintf(query, "SELECT t1.tweet_id, t2.screenname, t1.tweettimestamp, t1.tweettext FROM(SELECT tweet_id, userwriter, tweettimestamp, tweettext FROM tweets WHERE retweet= %s ) t1JOIN(SELECT screenname, user_id FROM users) t2 ON t1.userwriter = t2.user_id", tweet_id);
+	sprintf(query, "SELECT t1.tweet_id, t2.screenname, t1.tweettimestamp, t1.tweettext FROM(SELECT tweet_id, userwriter, tweettimestamp, tweettext FROM tweets WHERE retweet= %s ) t1 JOIN(SELECT screenname, user_id FROM users) t2 ON t1.userwriter = t2.user_id", tweet_id);
 
 	SQLExecDirect(stmt, (SQLCHAR*) query, SQL_NTS);
 
@@ -153,7 +157,7 @@ short appreq_retweets(SQLCHAR* tweet_id) {
 		ret = SQLGetData(stmt, 2, SQL_C_CHAR, aids, sizeof(aids), NULL);
 		ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
 		ret = SQLGetData(stmt, 4, SQL_C_CHAR, aidf, sizeof(aidd), NULL);
-		printf("%ld,%s,%s, \"%s\"", buff, aids, aidd, aidf);
+		printf("%ld,%s,%s, %s\n", buff, aids, aidd, aidf);
 		n++;
 	}
 
@@ -189,7 +193,7 @@ short appreq_maxrt() {
 		ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, &buff, sizeof(SQLINTEGER), NULL);
 		ret = SQLGetData(stmt, 2, SQL_C_SBIGINT, &num, sizeof(SQLINTEGER), NULL);
 		ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
-		printf("%ld,%s,%ld", buff, aidd, num);
+		printf("%ld,%ld,%s\n", buff, num, aidd);
 	}
 
 	return 0;
@@ -222,7 +226,7 @@ short appreq_maxfw() {
 		ret = SQLGetData(stmt, 1, SQL_C_SBIGINT, &buff, sizeof(SQLINTEGER), NULL);
 		ret = SQLGetData(stmt, 2, SQL_C_SBIGINT, &num, sizeof(SQLINTEGER), NULL);
 		ret = SQLGetData(stmt, 3, SQL_C_CHAR, aidd, sizeof(aidd), NULL);
-		printf("%ld,%s,%ld", buff, aidd, num);
+		printf("%ld,%s,%ld\n", buff, aidd, num);
 	}
 
 	return 0;
@@ -232,7 +236,7 @@ int main(int argc, char **argv)
 {
 	if(argc == 1){
 		printf("Ejija una opcion.");
-		return -1;	
+		return -1;
 		}
 		if(strcmp(argv[1], "user") == 0){
 				appreq_user((SQLCHAR*)argv[2]);

@@ -144,7 +144,6 @@ int main(int argc, char **argv)
           strcat(text, argv[i]);
           strcat(text, " ");
         }
-        printf("%s\n", text);
         apptweet_new((SQLCHAR*)argv[2], (SQLCHAR*)text);
         return 0;
     }
